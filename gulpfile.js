@@ -5,15 +5,18 @@ var gulp = require('gulp'),
     rimraf = require('gulp-rimraf'),
     gulpFilter = require('gulp-filter'),
     wiredep = require('wiredep').stream,
-
-    mainBowerFiles = require('gulp-main-bower-files');;
+    useref = require('gulp-useref'),
+    gulpif = require('gulp-if'),
+    rigger = require('gulp-rigger'),
+    // base64 = require('gulp-base64'),
+    rebase = require('gulp-css-url-rebase');
 
 var path = {
   dev: {
     html: './dev/html/*.html',
     scss: './dev/static/scss/**/*.scss',
     js: './dev/static/js/**/*.js',
-    wiredepFolder: './dev/html'
+    wiredepFolder: './dev/html-preview'
   },
   prod: {
     html: './prod/html',
@@ -26,6 +29,7 @@ gulp.task('bower', function () {
   gulp.src( path.dev.html )
     .pipe(wiredep({
     }))
+    .pipe( rigger() )
     .pipe(gulp.dest( path.dev.wiredepFolder ));
 });
 
@@ -37,23 +41,19 @@ gulp.task('clean', function(){
 })
 
 gulp.task('bower_build', function(){
-  var jsOnly = gulpFilter(['**/*.js'], { restore: true } ),
-      cssOnly = gulpFilter(['**/*.css'], { restore: true } );
 
-  return gulp.src('./bower.json')
-    .pipe( mainBowerFiles( ) )
+  var assets = useref.assets();
+ 
+  return gulp.src( path.dev.html )
+    .pipe( assets )
+    .pipe( gulpif( '*.js', uglify() ) )
+    .pipe( gulpif( '*.css', rebase() ) )
+    // .pipe( gulpif( '*.css', base64( {
+    //   debug: true
+    // } ) ) )    
+    .pipe( gulpif( '*.css', minifyCss() ) )
+    .pipe( assets.restore() )
+    .pipe( useref() )
+    .pipe( gulp.dest( path.prod.html ) );
 
-    .pipe( jsOnly )
-    .pipe( uglify() )
-    .pipe( concat( 'plugins.js' ) )
-    .pipe( gulp.dest('./prod/') )
-    .pipe( jsOnly.restore )
-
-    .pipe( cssOnly )
-    .pipe( concat( 'plugins.css' ) )
-    .pipe( minifyCss( {
-      keepSpecialComments: 0
-    }) )
-    .pipe( gulp.dest( './prod/' ) );
-
-});
+})
