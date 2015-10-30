@@ -1,0 +1,8 @@
+@import 'utils/variables';
+@import 'utils/helpers';
+@import 'utils/sprite';
+@include sprites($spritesheet-sprites);
+
+body {
+	font-size: 18px;
+}
