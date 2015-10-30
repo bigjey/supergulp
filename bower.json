@@ -13,9 +13,6 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "~2.1.4",
-    "bootstrap": "3.3.4",
-    "fancybox3": "*"
   },
   "devDependencies": {}
 }
